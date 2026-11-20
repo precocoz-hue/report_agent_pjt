@@ -1,10 +1,10 @@
 """보고서 Router: Path/Query/JSON/HTTP Status와 Service 호출만 담당합니다."""
 
 from datetime import datetime
-from fastapi import APIRouter, Depends, Query, Path
+from fastapi import APIRouter, Depends, Query, Path, Response
 from sqlalchemy.orm import Session
 from app.db.session import get_db
-from app.schemas.report import ReportCreate, CategoryCode
+from app.schemas.report import ReportCreate, ReportUpdate, CategoryCode
 from app.services import report_service
 from app.core.config import at_least
 from app.services.errors import DomainError
@@ -30,3 +30,12 @@ def list_reports(title:str|None=None,limit:int=Query(20,ge=1,le=100),
 @router.get('/reports/{report_id}')
 def get_report(report_id:int=Path(ge=1),db:Session=Depends(get_db)):
     return report_service.get_report(db,report_id)
+
+@router.put('/reports/{report_id}')
+def update_report(body:ReportUpdate,report_id:int=Path(ge=1),db:Session=Depends(get_db)):
+    return report_service.update_report(db,report_id,body)
+
+@router.delete('/reports/{report_id}',status_code=204)
+def delete_report(report_id:int=Path(ge=1),db:Session=Depends(get_db)):
+    report_service.delete_report(db,report_id)
+    return Response(status_code=204)
